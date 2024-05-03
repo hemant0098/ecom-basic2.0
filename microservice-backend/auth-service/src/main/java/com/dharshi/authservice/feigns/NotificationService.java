@@ -1,15 +1,16 @@
 package com.dharshi.authservice.feigns;
 
 
+import com.dharshi.authservice.dtos.ApiResponseDto;
+import com.dharshi.authservice.dtos.MailRequestDto;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @FeignClient("NOTIFICATION-SERVICE")
 public interface NotificationService {
 
-    @GetMapping("/purely/notification/registrationVerification")
-    public void sendUserRegistrationVerificationEmail(@RequestParam String email,
-                                                      @RequestParam String username,
-                                                      @RequestParam String verificationCode);
+    @PostMapping("/purely/notification/send")
+    ResponseEntity<ApiResponseDto<?>> sendEmail(@RequestBody MailRequestDto requestDto);
 }
