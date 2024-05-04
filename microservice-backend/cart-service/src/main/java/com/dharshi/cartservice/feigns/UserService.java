@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient("USER-SERVICE")
 public interface UserService {
 
-    @GetMapping("/purely/user/exists/byId")
+    @GetMapping("/user/exists/byId")
     ResponseEntity<ApiResponseDto<Boolean>> existsUserById(@RequestParam String userId);
-
 
 }
