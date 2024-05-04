@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient("CATEGORY-SERVICE")
 public interface CategoryService {
 
-    @GetMapping("/purely/category/get/byId")
+    @GetMapping("/category/get/byId")
     ResponseEntity<ApiResponseDto<CategoryDto>> getCategoryById(@RequestParam String id);
 
 }
