@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 @FeignClient("USER-SERVICE")
 public interface UserService {
 
-    @GetMapping("/purely/user/get/byId")
+    @GetMapping("/user/get/byId")
     ResponseEntity<ApiResponseDto<UserDto>> getUserById(@RequestParam String id);
 
 }
