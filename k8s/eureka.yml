@@ -28,11 +28,11 @@ metadata:
   name: service-registry
   namespace: ecom-basic
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: eureka-app
   ports:
   - port: 8761
     targetPort: 8761
-    nodePort: 30000
+    
   
