@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: ecom-basic
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+      - name: auth-service
+        image: hemantdevgan/auth-service:v1.0
+        ports:
+        - containerPort: 9034
+        env:
+        - name: EUREKA_URL
+          value: http://service-registry:8761/eureka/
+        - name: MONGO_URI
+          value: "mongodb://admin:hemant0098@mongodb:27017/authservice?authSource=admin"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: ecom-basic
+spec:
+  type: ClusterIP
+  selector:
+    app: auth-service
+  ports:
+  - port: 9030
+    targetPort: 9030    
