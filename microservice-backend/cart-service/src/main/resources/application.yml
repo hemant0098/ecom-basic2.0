@@ -3,10 +3,7 @@ spring:
         name: cart-service
     data:
         mongodb:
-            uri: 
-    jpa:
-        hibernate:
-            ddl-auto: update
+            uri: "${MONGO_URI}"
 
 server:
     port: 9060
@@ -14,6 +11,6 @@ server:
 eureka:
     client:
         serviceUrl:
-            defaultZone: http://localhost:8761/eureka/
+            defaultZone: "${EUREKA_URL:http://localhost:8761/eureka/}"
     instance:
-        hostname: localhost
+        preferIpAddress: true

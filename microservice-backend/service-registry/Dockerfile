@@ -1,19 +1,12 @@
-FROM maven:3.9.6-eclipse-temurin-21 AS builder
-
+FROM maven:3.9-eclipse-temurin-21 AS build
 WORKDIR /app
+COPY microservice-backend/service-registry/pom.xml .
+COPY microservice-backend/service-registry/src ./src
 
-COPY pom.xml .
-
-COPY src ./src
-
-RUN mvn clean package -DskipTests
-
-FROM openjdk:21-jdk-slim
-
-WORKDIR /app
-
-COPY --from=builder /app/target/*.jar app.jar
-
+RUN mvn package -DskipTests
 EXPOSE 8761
 
-CMD ["java", "-jar", "app.jar"]
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+COPY --from=build /app/target/*.jar app.jar
+CMD [ "java", "-jar", "app.jar" ]

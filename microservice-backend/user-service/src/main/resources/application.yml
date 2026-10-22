@@ -3,15 +3,12 @@ spring:
         name: user-service
     data:
         mongodb:
-            uri: 
-    jpa:
-        hibernate:
-            ddl-auto: update
-
+            uri: "${MONGO_URI}"
+    
 server:
     port: 9050
 
 eureka:
     client:
         serviceUrl:
-            defaultZone: http://localhost:8761/eureka/
+            defaultZone: "${EUREKA_URL:http://localhost:8761/eureka/}"
