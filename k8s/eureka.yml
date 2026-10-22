@@ -7,7 +7,6 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      labels:
         app: eureka-app
   template:
     metadata:
@@ -16,7 +15,7 @@ spec:
     spec:
       containers:
       - name: eureka-app
-        image: hemantdevgan/eureka-app:v1
+        image: hemantdevgan/eureka-service:v1.0
         ports:
         - containerPort: 8761
           
@@ -33,7 +32,7 @@ spec:
   selector:
     app: eureka-app
   ports:
-  - containerPort: 8761
-    hostPort: 8761
+  - port: 8761
+    targetPort: 8761
     nodePort: 30000
   
