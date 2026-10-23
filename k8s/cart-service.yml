@@ -22,7 +22,7 @@ spec:
         - name: EUREKA_URL
           value: http://service-registry:8761/eureka/
         - name: MONGO_URI
-          value: "mongodb://admin:hemant0098@mongodb:27017/"
+          value: "mongodb://admin:hemant0098@mongodb:27017/cartdb?authSource=admin"
 
 ---
 
