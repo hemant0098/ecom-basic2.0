@@ -1,6 +1,6 @@
 
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mongodb
   namespace: ecom-basic
@@ -20,9 +20,9 @@ spec:
           ports:
             - containerPort: 27017
           env:
-          - name: MONGO_ROOT_USERNAME
+          - name: MONGO_INITDB_ROOT_USERNAME
             value: "admin"
-          - name: MONGO_ROOT_PASSWORD
+          - name: MONGO_INITDB_ROOT_PASSWORD
             value: "hemant0098"
           volumeMounts:
             - name: mongodb-data
