@@ -11,12 +11,15 @@ backend:
         port: 9030
         "${EUREKA_URL:http://localhost:8761/eureka/}"
         "${MONGO_URI}"
-        
+      
     cart-service:
         port: 9060
         "${EUREKA_URL:http://localhost:8761/eureka/}"
         "${MONGO_URI}"
-        
+    category-service:
+        port: 9000    
+        "${EUREKA_URL:http://localhost:8761/eureka/}"
+        "${MONGO_URI}"
     notification-service:
         port: 9020
         "${MAIL_HOSTNAME}"
@@ -24,6 +27,10 @@ backend:
         "${MAIL_USERNAME}"
         "${MAIL_PASSWORD}"
         "${EUREKA_URL:http://localhost:8761/eureka/}"
+    product-service:
+        port: 9010
+        "${EUREKA_URL:http://localhost:8761/eureka/}"
+        "${MONGO_URI}"
     order-service:
         port: 9070
         "${EUREKA_URL:http://localhost:8761/eureka/}"

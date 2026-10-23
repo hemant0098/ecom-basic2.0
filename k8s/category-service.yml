@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: category-service
+  namespace: ecom-basic
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: category-service
+  template:
+    metadata:
+      labels:
+        app: category-service
+    spec:
+      containers:
+      - name: category-service
+        image: hemantdevgan/category-service:v1.0
+        ports:
+        - containerPort: 9000
+        env:
+        - name: EUREKA_URL
+          value: http://service-registry:8761/eureka/
+        - name: MONGO_URI
+          value: "mongodb://admin:hemant0098@mongodb:27017/categorydb?authSource=admin"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: category-service
+  namespace: ecom-basic
+spec:
+  type: ClusterIP
+  selector:
+    app: category-service
+  ports:
+  - port: 9000
+    targetPort: 9000
