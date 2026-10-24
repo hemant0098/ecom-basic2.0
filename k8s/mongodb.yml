@@ -5,6 +5,7 @@ metadata:
   name: mongodb
   namespace: ecom-basic
 spec:
+  serviceName: mongodb
   replicas: 1
   selector:
     matchLabels:
@@ -20,16 +21,23 @@ spec:
           ports:
             - containerPort: 27017
           env:
-          - name: MONGO_INITDB_ROOT_USERNAME
-            value: "admin"
-          - name: MONGO_INITDB_ROOT_PASSWORD
-            value: "hemant0098"
+            - name: MONGO_INITDB_ROOT_USERNAME
+              value: "admin"
+            - name: MONGO_INITDB_ROOT_PASSWORD
+              value: "hemant0098"
           volumeMounts:
             - name: mongodb-data
               mountPath: /data/db
-      volumes:
-        - name: mongodb-data
-          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: mongodb-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: gp2
+        resources:
+          requests:
+            storage: 5Gi
 ---
 apiVersion: v1
 kind: Service
