@@ -19,6 +19,10 @@ spec:
         ports:
         - containerPort: 9010
         env:
+        - name: MAIL_HOSTNAME
+          value: "mailpit"
+        - name: MAIL_PORT
+          value: "1025"
         - name: EUREKA_URL
           value: http://service-registry:8761/eureka/
         - name: MONGO_URI

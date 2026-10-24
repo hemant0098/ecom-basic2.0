@@ -14,9 +14,14 @@ import java.io.UnsupportedEncodingException;
 
 @Service
 public interface AuthService {
+
     ResponseEntity<ApiResponseDto<?>> registerUser(SignUpRequestDto signUpRequestDto) throws UnsupportedEncodingException, UserAlreadyExistsException, ServiceLogicException;
+
     ResponseEntity<ApiResponseDto<?>> resendVerificationCode(String email) throws UnsupportedEncodingException, UserNotFoundException, ServiceLogicException;
+
     ResponseEntity<ApiResponseDto<?>> verifyRegistrationVerification(String code) throws UserVerificationFailedException;
+
     ResponseEntity<ApiResponseDto<?>> authenticateUser(SignInRequestDto signInRequestDto);
+
     ResponseEntity<ApiResponseDto<?>> validateToken(String token);
 }
