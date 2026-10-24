@@ -27,7 +27,7 @@ metadata:
   name: mailpit
   namespace: ecom-basic
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: mailpit
   ports:
