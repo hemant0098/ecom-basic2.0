@@ -17,7 +17,7 @@ spec:
       - name: notification-service
         image: hemantdevgan/notification-service:v1.0
         ports:
-        - containerPort: 9010
+        - containerPort: 9020
         env:
         - name: MAIL_HOSTNAME
           value: "mailpit"
@@ -25,8 +25,7 @@ spec:
           value: "1025"
         - name: EUREKA_URL
           value: http://service-registry:8761/eureka/
-        - name: MONGO_URI
-          value: "mongodb://admin:hemant0098@mongodb:27017/notificationdb?authSource=admin"
+
 
 ---
 
@@ -40,5 +39,5 @@ spec:
   selector:
     app: notification-service
   ports:
-  - port: 9010
-    targetPort: 9010
+  - port: 9020
+    targetPort: 9020
