@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: notification-service
-        image: hemantdevgan/notification-service:v1.0
+        image: hemantdevgan/notification-service:v1.1
         ports:
         - containerPort: 9020
         env:
