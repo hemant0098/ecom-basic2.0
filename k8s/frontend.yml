@@ -27,7 +27,7 @@ metadata:
   name: ecom-frontend
   namespace: ecom-basic
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: ecom-frontend
   ports:

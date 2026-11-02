@@ -28,7 +28,7 @@ metadata:
   name: service-registry
   namespace: ecom-basic
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: eureka-app
   ports:

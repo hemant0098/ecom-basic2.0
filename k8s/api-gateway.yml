@@ -30,7 +30,7 @@ metadata:
   name: api-gateway-service
   namespace: ecom-basic
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: api-service
   ports:

@@ -27,7 +27,7 @@ metadata:
   name: mailpit
   namespace: ecom-basic
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
     app: mailpit
   ports:
@@ -37,3 +37,4 @@ spec:
     - name: web
       port: 8025
       targetPort: 8025
+      nodePort: 30005
