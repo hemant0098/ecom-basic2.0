@@ -17,13 +17,29 @@ spec:
             port:
               number: 80
 
-      - path: /api
+      - path: /eureka
         pathType: Prefix
         backend:
           service:
             name: service-registry
             port:
               number: 8761
+
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: api-gateway-service
+            port:
+              number: 8081
+      
+      - path: /mailpit
+        pathType: Prefix
+        backend:
+          service:
+            name: mailpit-service
+            port:
+              number: 8025
 
 ---
 apiVersion: v1
