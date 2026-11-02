@@ -3,7 +3,7 @@ kind: Ingress
 metadata:
   name: nginx-ingress
   namespace: ecom-basic
-  anootations:
+  annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
 
 spec:
