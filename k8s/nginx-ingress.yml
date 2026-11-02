@@ -24,3 +24,18 @@ spec:
             name: service-registry
             port:
               number: 8761
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-ingress-service
+  namespace: ecom-basic
+spec:
+  type: NodePort
+  selector:
+    app: nginx-ingress
+  ports:
+  - port: 80
+    targetPort: 80
+    nodePort: 30008
