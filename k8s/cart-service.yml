@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: cart-service
-        image: hemantdevgan/cart-service:v1.0
+        image: hemantdevgan/cart-service:v1.1
         ports:
         - containerPort: 9060
         env:
