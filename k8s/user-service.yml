@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: user-service
-        image: hemantdevgan/user-service:v1.0
+        image: hemantdevgan/user-service:v1.1
         ports:
         - containerPort: 9050
         env:
