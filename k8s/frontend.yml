@@ -4,7 +4,7 @@ metadata:
   name: ecom-frontend
   namespace: ecom-basic
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: ecom-frontend

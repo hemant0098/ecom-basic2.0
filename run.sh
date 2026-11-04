@@ -2,14 +2,15 @@
 
 set -e
 
-echo "deploying mailpit server"
-kubectl apply -f k8s/mailpit.yml
-
-echo "configuring notification service"
+echo "deploying services----"
+kubectl apply -f k8s/auth-service.yml
+kubectl apply -f k8s/cart-service.yml
+kubectl apply -f k8s/category-service.yml
+kubectl apply -f k8s/frontend.yml
 kubectl apply -f k8s/notification.yml
+kubectl apply -f k8s/order-service.yml
+kubectl apply -f k8s/product-service.yml
+kubectl apply -f k8s/user-service.yml
 
-echo "Waiting for Notification Service..."
-kubectl rollout status deployment/notification-service -n ecom-basic
+kubectl get pods -n ecom-basic
 
-echo "mailpit port forwarding to 8025"
-kubectl port-forward -n ecom-basic svc/mailpit 8025:8025
