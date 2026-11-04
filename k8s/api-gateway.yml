@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: api-service
-        image: hemantdevgan/api-gateway:v1.0
+        image: hemantdevgan/api-gateway:v2.0
         ports:
         - containerPort: 8081
         env:
