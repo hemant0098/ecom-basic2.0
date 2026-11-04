@@ -1,4 +1,3 @@
-
 package com.dharshi.cartservice.services;
 
 import com.dharshi.cartservice.dtos.*;
@@ -9,15 +8,12 @@ import com.dharshi.cartservice.feigns.UserService;
 import com.dharshi.cartservice.modals.Cart;
 import com.dharshi.cartservice.modals.CartItem;
 import com.dharshi.cartservice.repositories.CartRepository;
-
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -32,91 +28,22 @@ public class CartServiceImpl implements CartService {
     @Autowired
     private UserService userService;
 
-    // =====================================================
-    // ADD ITEM TO CART
-    // =====================================================
-
     @Override
-    public ResponseEntity<ApiResponseDto<?>> addItemToCart(
-            String userId,
-            CartItemRequestDto requestDto
-    ) throws ResourceNotFoundException, ServiceLogicException {
-
+    public ResponseEntity<ApiResponseDto<?>> addItemToCart(String userId, CartItemRequestDto requestDto) throws ResourceNotFoundException, ServiceLogicException {
         try {
-
-            if (requestDto == null) {
-                throw new IllegalArgumentException("Cart item request cannot be null");
+            if (!Objects.requireNonNull(userService.existsUserById(userId).getBody()).getResponse()) {
+                throw new ResourceNotFoundException("User not found with id " + userId);
+            }
+            if (Objects.requireNonNull(productService.getProductById(requestDto.getProductId()).getBody()).getResponse()==null) {
+                throw new ResourceNotFoundException("Product not found with id " + requestDto.getProductId());
             }
 
-            // Validate user
-            var userResponse = userService.existsUserById(userId);
-
-            if (userResponse == null
-                    || userResponse.getBody() == null
-                    || !Boolean.TRUE.equals(
-                            userResponse.getBody().getResponse()
-                    )) {
-
-                throw new ResourceNotFoundException(
-                        "User not found with id " + userId
-                );
-            }
-
-            // Validate product
-            var productResponse = productService.getProductById(
-                    requestDto.getProductId()
-            );
-
-            if (productResponse == null
-                    || productResponse.getBody() == null
-                    || productResponse.getBody().getResponse() == null) {
-
-                throw new ResourceNotFoundException(
-                        "Product not found with id "
-                                + requestDto.getProductId()
-                );
-            }
-
-            // Validate quantity
-            if (requestDto.getQuantity() <= 0) {
-                throw new IllegalArgumentException(
-                        "Quantity must be greater than zero"
-                );
-            }
-
-            // Get existing cart or create new cart
             Cart userCart = getCart(userId);
+            Set<CartItem> userCartItems = userCart.getCartItems();
+            CartItem cartItem = createCartItem(userCartItems, requestDto);
 
-            Set<CartItem> cartItems = userCart.getCartItems();
-
-            if (cartItems == null) {
-                cartItems = new HashSet<>();
-            }
-
-            // Check whether product already exists in cart
-            CartItem existingItem = getExistingCartItem(
-                    cartItems,
-                    requestDto.getProductId()
-            );
-
-            if (existingItem == null) {
-
-                CartItem newItem = CartItem.builder()
-                        .productId(requestDto.getProductId())
-                        .quantity(requestDto.getQuantity())
-                        .build();
-
-                cartItems.add(newItem);
-
-            } else {
-
-                existingItem.setQuantity(
-                        existingItem.getQuantity()
-                                + requestDto.getQuantity()
-                );
-            }
-
-            userCart.setCartItems(cartItems);
+            userCartItems.add(cartItem);
+            userCart.setCartItems(userCartItems);
 
             cartRepository.save(userCart);
 
@@ -126,207 +53,97 @@ public class CartServiceImpl implements CartService {
                             .message("Item successfully added to cart!")
                             .build()
             );
-
-        } catch (ResourceNotFoundException e) {
-
-            throw e;
-
-        } catch (Exception e) {
-
-            log.error(
-                    "Failed to add item to cart for userId: {}",
-                    userId,
-                    e
-            );
-
-            throw new ServiceLogicException(
-                    "Unable to add item to cart!"
-            );
+        }catch (ResourceNotFoundException e) {
+            throw new ResourceNotFoundException(e.getMessage());
+        }catch (Exception e) {
+            log.error("Failed to add item to cart: " + e.getMessage());
+            throw new ServiceLogicException("Unable to add item to cart!");
         }
     }
 
-    // =====================================================
-    // GET CART ITEMS BY USER
-    // =====================================================
-
     @Override
-    public ResponseEntity<ApiResponseDto<?>> getCartItemsByUser(
-            String userId
-    ) throws ResourceNotFoundException, ServiceLogicException {
-
+    public ResponseEntity<ApiResponseDto<?>> getCartItemsByUser(String userId) throws ResourceNotFoundException, ServiceLogicException {
         try {
 
-            var userResponse = userService.existsUserById(userId);
+            if (Objects.requireNonNull(userService.existsUserById(userId).getBody()).getResponse()) {
+                if(!cartRepository.existsByUserId(userId)) {
+                    createAndSaveNewCart(userId);
+                }
 
-            if (userResponse == null
-                    || userResponse.getBody() == null
-                    || !Boolean.TRUE.equals(
-                            userResponse.getBody().getResponse()
-                    )) {
+                Cart userCart = getCart(userId);
 
-                throw new ResourceNotFoundException(
-                        "User not found with id " + userId
+                CartResponseDto cartResponse = cartToCartResponseDto(userCart);
+
+                return ResponseEntity.ok(
+                        ApiResponseDto.builder()
+                                .isSuccess(true)
+                                .response(cartResponse)
+                                .build()
                 );
             }
-
-            Cart userCart = getCart(userId);
-
-            CartResponseDto cartResponse =
-                    cartToCartResponseDto(userCart);
-
-            return ResponseEntity.ok(
-                    ApiResponseDto.builder()
-                            .isSuccess(true)
-                            .response(cartResponse)
-                            .build()
-            );
-
-        } catch (ResourceNotFoundException e) {
-
-            throw e;
-
-        } catch (Exception e) {
-
-            log.error(
-                    "Failed to find cart for userId: {}",
-                    userId,
-                    e
-            );
-
-            throw new ServiceLogicException(
-                    "Unable to find cart!"
-            );
+        }catch (Exception e) {
+            log.error("Failed to find cart: " + e.getMessage());
+            throw new ServiceLogicException("Unable to find cart!");
         }
+        throw new ResourceNotFoundException("User not found with id " + userId);
+
     }
 
-    // =====================================================
-    // REMOVE ITEM FROM CART
-    // =====================================================
-
     @Override
-    public ResponseEntity<ApiResponseDto<?>> removeCartItemFromCart(
-            String userId,
-            String productId
-    ) throws ServiceLogicException, ResourceNotFoundException {
-
+    public ResponseEntity<ApiResponseDto<?>> removeCartItemFromCart(String userId, String productId) throws ServiceLogicException, ResourceNotFoundException {
         try {
+            if(cartRepository.existsByUserId(userId)) {
+                Cart userCart = cartRepository.findByUserId(userId);
+                Set<CartItem> removedItemsSet = removeCartItem(userCart.getCartItems(), productId);
+                userCart.setCartItems(removedItemsSet);
+                cartRepository.save(userCart);
 
-            Cart userCart = cartRepository.findByUserId(userId);
-
-            if (userCart == null) {
-                throw new ResourceNotFoundException(
-                        "No cart found for user " + userId
+                return ResponseEntity.ok(
+                        ApiResponseDto.builder()
+                                .isSuccess(true)
+                                .message("Item successfully removed to cart!")
+                                .build()
                 );
+
             }
 
-            Set<CartItem> cartItems = userCart.getCartItems();
-
-            if (cartItems == null) {
-                cartItems = new HashSet<>();
-            }
-
-            Set<CartItem> updatedItems =
-                    removeCartItem(cartItems, productId);
-
-            userCart.setCartItems(updatedItems);
-
-            cartRepository.save(userCart);
-
-            return ResponseEntity.ok(
-                    ApiResponseDto.builder()
-                            .isSuccess(true)
-                            .message("Item successfully removed from cart!")
-                            .build()
-            );
-
-        } catch (ResourceNotFoundException e) {
-
-            throw e;
-
-        } catch (Exception e) {
-
-            log.error(
-                    "Failed to remove cart item for userId: {}, productId: {}",
-                    userId,
-                    productId,
-                    e
-            );
-
-            throw new ServiceLogicException(
-                    "Unable to remove item from cart!"
-            );
+        }catch (Exception e) {
+            log.error("Failed to add item to cart: " + e.getMessage());
+            throw new ServiceLogicException("Unable to add item to cart!");
         }
+        throw new ResourceNotFoundException("No cart found for user " + userId);
     }
 
-    // =====================================================
-    // CLEAR CART
-    // =====================================================
-
     @Override
-    public ResponseEntity<ApiResponseDto<?>> clearCartById(
-            String id
-    ) throws ServiceLogicException, ResourceNotFoundException {
-
+    public ResponseEntity<ApiResponseDto<?>> clearCartById(String id) throws ServiceLogicException, ResourceNotFoundException {
         try {
+            if(cartRepository.existsById(id)) {
+                Cart userCart = cartRepository.findById(id).orElse(null);
+                userCart.setCartItems(new HashSet<>());
+                cartRepository.save(userCart);
 
-            Cart userCart = cartRepository.findById(id).orElse(null);
-
-            if (userCart == null) {
-                throw new ResourceNotFoundException(
-                        "No cart found for id " + id
+                return ResponseEntity.ok(
+                        ApiResponseDto.builder()
+                                .isSuccess(true)
+                                .message("Cart has been successfully cleared!")
+                                .build()
                 );
+
             }
 
-            userCart.setCartItems(new HashSet<>());
-
-            cartRepository.save(userCart);
-
-            return ResponseEntity.ok(
-                    ApiResponseDto.builder()
-                            .isSuccess(true)
-                            .message("Cart has been successfully cleared!")
-                            .build()
-            );
-
-        } catch (ResourceNotFoundException e) {
-
-            throw e;
-
-        } catch (Exception e) {
-
-            log.error(
-                    "Failed to clear cart with id: {}",
-                    id,
-                    e
-            );
-
-            throw new ServiceLogicException(
-                    "Unable to clear cart!"
-            );
+        }catch (Exception e) {
+            log.error("Failed to add item to cart: " + e.getMessage());
+            throw new ServiceLogicException("Unable to add item to cart!");
         }
+        throw new ResourceNotFoundException("No cart found for id " + id);
     }
 
-    // =====================================================
-    // GET CART BY ID
-    // =====================================================
-
     @Override
-    public ResponseEntity<ApiResponseDto<?>> getCartById(
-            String id
-    ) throws ServiceLogicException {
-
+    public ResponseEntity<ApiResponseDto<?>> getCartById(String id) throws ServiceLogicException {
         try {
 
             Cart cart = cartRepository.findById(id).orElse(null);
-
-            if (cart == null) {
-                throw new ResourceNotFoundException(
-                        "Cart not found with id " + id
-                );
-            }
-
-            CartResponseDto cartResponse =
-                    cartToCartResponseDto(cart);
+            CartResponseDto cartResponse = cartToCartResponseDto(cart);
 
             return ResponseEntity.ok(
                     ApiResponseDto.builder()
@@ -336,110 +153,70 @@ public class CartServiceImpl implements CartService {
                             .build()
             );
 
-        } catch (Exception e) {
-
-            log.error(
-                    "Failed to find cart with id: {}",
-                    id,
-                    e
-            );
-
-            throw new ServiceLogicException(
-                    "Unable to find cart!"
-            );
+        }catch (Exception e) {
+            log.error("Failed to find cart: " + e.getMessage());
+            throw new ServiceLogicException("Unable to find cart!");
         }
     }
 
-    // =====================================================
-    // CREATE NEW CART
-    // =====================================================
-
     private void createAndSaveNewCart(String userId) {
-
-        if (!cartRepository.existsByUserId(userId)) {
-
+        if(!cartRepository.existsByUserId(userId)) {
             Cart cart = Cart.builder()
                     .userId(userId)
                     .cartItems(new HashSet<>())
                     .build();
-
             cartRepository.insert(cart);
-
-            log.info("New cart created for userId: {}", userId);
         }
     }
 
-    // =====================================================
-    // GET OR CREATE CART
-    // =====================================================
-
-    private Cart getCart(String userId) {
-
-        createAndSaveNewCart(userId);
-
-        Cart cart = cartRepository.findByUserId(userId);
-
-        if (cart == null) {
-            throw new IllegalStateException(
-                    "Cart could not be created or retrieved for userId: "
-                            + userId
-            );
-        }
-
-        if (cart.getCartItems() == null) {
-            cart.setCartItems(new HashSet<>());
-        }
-
-        return cart;
+    private CartItem getNewCartItem(CartItemRequestDto requestDto) {
+        return CartItem.builder()
+                .productId(requestDto.getProductId())
+                .quantity(1)
+                .build();
     }
 
-    // =====================================================
-    // GET EXISTING CART ITEM
-    // =====================================================
-
-    private CartItem getExistingCartItem(
-            Set<CartItem> cartItems,
-            String productId
-    ) {
-
-        if (cartItems == null || cartItems.isEmpty()) {
+    private CartItem getExistingCartItem(Set<CartItem> userCartItems, String productId) {
+        List<CartItem> existingCartItems = userCartItems.stream().filter(item -> item.getProductId().equals(productId)).toList();
+        if (existingCartItems.isEmpty()){
             return null;
         }
-
-        return cartItems.stream()
-                .filter(item -> item.getProductId().equals(productId))
-                .findFirst()
-                .orElse(null);
+        return existingCartItems.get(0);
     }
 
-    // =====================================================
-    // CONVERT CART TO CART RESPONSE DTO
-    // =====================================================
+    private Cart getCart(String userId) {
+        //  if cart is not already present create new cart
+        createAndSaveNewCart(userId);
+        return cartRepository.findByUserId(userId);
+    }
 
-    private CartResponseDto cartToCartResponseDto(Cart userCart) {
+    private CartItem createCartItem(Set<CartItem> userCartItems, CartItemRequestDto requestDto) {
 
-        if (userCart == null) {
-            throw new IllegalStateException("Cart cannot be null");
+        CartItem cartItem = getExistingCartItem(userCartItems, requestDto.getProductId());
+
+        if (cartItem == null) {
+            cartItem = getNewCartItem(requestDto);
+        }else {
+            if (requestDto.getQuantity() <= 0) requestDto.setQuantity(-1);
+            if (requestDto.getQuantity() > 0) requestDto.setQuantity(1);
+            if (cartItem.getQuantity() + requestDto.getQuantity() <= 0) requestDto.setQuantity(0);
+            userCartItems.remove(cartItem);
+            cartItem.setQuantity(cartItem.getQuantity() + requestDto.getQuantity());
         }
 
+        return cartItem;
+    }
+
+    private CartResponseDto cartToCartResponseDto(Cart userCart) {
         int noOfCartItems = 0;
         double subtotal = 0.0;
 
         Set<CartItemResponseDto> cartItems = new HashSet<>();
-
-        if (userCart.getCartItems() != null) {
-
-            for (CartItem cartItem : userCart.getCartItems()) {
-
-                CartItemResponseDto cartItemResponse =
-                        cartItemToCartItemResponseDto(cartItem);
-
-                noOfCartItems += cartItemResponse.getQuantity();
-
-                subtotal += cartItemResponse.getAmount();
-
-                cartItems.add(cartItemResponse);
-            }
+        for (CartItem cartItem: userCart.getCartItems()) {
+            CartItemResponseDto cartItemResponse = cartItemToCartItemResponseDto(cartItem);
+            noOfCartItems += cartItemResponse.getQuantity();
+            subtotal += cartItemResponse.getAmount();
+            cartItems.add(cartItemResponse);
         }
 
         return CartResponseDto.builder()
@@ -451,28 +228,8 @@ public class CartServiceImpl implements CartService {
                 .build();
     }
 
-    // =====================================================
-    // CONVERT CART ITEM TO RESPONSE DTO
-    // =====================================================
-
-    private CartItemResponseDto cartItemToCartItemResponseDto(
-            CartItem cartItem
-    ) {
-
-        var productResponse =
-                productService.getProductById(cartItem.getProductId());
-
-        if (productResponse == null
-                || productResponse.getBody() == null
-                || productResponse.getBody().getResponse() == null) {
-
-            throw new IllegalStateException(
-                    "Product not found with id: " + cartItem.getProductId()
-            );
-        }
-
-        ProductDto product =
-                productResponse.getBody().getResponse();
+    private CartItemResponseDto cartItemToCartItemResponseDto(CartItem cartItem) {
+        ProductDto product = productService.getProductById(cartItem.getProductId()).getBody().getResponse();
 
         return CartItemResponseDto.builder()
                 .productId(product.getId())
@@ -485,23 +242,13 @@ public class CartServiceImpl implements CartService {
                 .build();
     }
 
-    // =====================================================
-    // REMOVE CART ITEM FROM SET
-    // =====================================================
+    private Set<CartItem> removeCartItem(Set<CartItem> userCartItems, String productId) {
+        CartItem existingCartItem = getExistingCartItem(userCartItems, productId);
 
-    private Set<CartItem> removeCartItem(
-            Set<CartItem> cartItems,
-            String productId
-    ) {
-
-        if (cartItems == null || cartItems.isEmpty()) {
-            return new HashSet<>();
+        if (existingCartItem != null) {
+            userCartItems.remove(existingCartItem);
         }
 
-        cartItems.removeIf(
-                item -> item.getProductId().equals(productId)
-        );
-
-        return cartItems;
+        return userCartItems;
     }
 }
