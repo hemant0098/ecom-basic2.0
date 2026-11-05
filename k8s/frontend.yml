@@ -27,9 +27,10 @@ metadata:
   name: ecom-frontend
   namespace: ecom-basic
 spec:
-  type: ClusterIP
+  type: NodePort
   selector:
     app: ecom-frontend
   ports:
   - port: 80
     targetPort: 80
+    nodePort: 30007
