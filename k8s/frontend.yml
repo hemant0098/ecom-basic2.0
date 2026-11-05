@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: ecom-frontend
-        image: hemantdevgan/frontend-service:v1.4
+        image: hemantdevgan/frontend-service:v2.0
         ports:
         - containerPort: 80
 
