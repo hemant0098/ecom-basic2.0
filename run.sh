@@ -7,7 +7,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 IMAGE='hemantdevgan/frontend-service:v2.0'
-DOCKERFILE='microservice-backend/frontend/Dockerfile'
+DOCKERFILE='frontend/Dockerfile'
 MANIFEST='k8s/frontend.yml'
 
 printf "${BLUE}Building image: %s${NC}\n" "$IMAGE"
