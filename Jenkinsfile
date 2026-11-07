@@ -22,7 +22,7 @@ pipeline {
         stage('Push') {
             steps {
                 echo 'Pushing images...'
-                sh 'docker tage my-frontend:v1.0 hemantdevgan/my-frontend:v1.0'
+                sh 'docker tag my-frontend:v1.0 hemantdevgan/my-frontend:v1.0'
                 sh 'docker push my-frontend:v1.0'
             }
         }
