@@ -9,6 +9,7 @@ pipeline {
                 sh 'git checkout main'
                 sh 'git pull origin main'
                 sh 'pwd'
+                echo 'checked'
             }
         }
         stage('Build') {
