@@ -36,7 +36,7 @@ pipeline {
             steps {
                 echo 'Pushing images...'
                 sh 'docker tag my-frontend:v1.0 hemantdevgan/my-frontend:v1.0'
-                sh 'docker push my-frontend:v1.0'
+                sh 'docker push hemantdevgan/my-frontend:v1.0'
             }
         }
         stage('Test') {
