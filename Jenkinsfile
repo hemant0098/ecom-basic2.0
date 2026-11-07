@@ -8,6 +8,7 @@ pipeline {
                 echo 'Checking out code...'
                 sh 'git checkout main'
                 sh 'git pull origin main'
+                sh 'pwd'
             }
         }
         stage('Build') {
