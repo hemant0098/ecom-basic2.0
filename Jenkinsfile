@@ -15,7 +15,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building images...'
-                sh 'docker build -f frontend/Dockerfile -t my-frontend:v1.0 frontend/'
+                sh 'docker build -f frontend/Dockerfile -t my-frontend:v1.0 .'
 
             }
         }
