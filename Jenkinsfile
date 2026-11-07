@@ -15,7 +15,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building images...'
-                sh 'docker build -f frontend/Dockerfile -t my-frontend:v1.0 .'
+                sh 'docker build -f frontend/Dockerfile -t my-frontend:v1.0.1 .'
 
             }
         }
@@ -35,8 +35,8 @@ pipeline {
         stage('Push') {
             steps {
                 echo 'Pushing images...'
-                sh 'docker tag my-frontend:v1.0 hemantdevgan/my-frontend:v1.0'
-                sh 'docker push hemantdevgan/my-frontend:v1.0'
+                sh 'docker tag my-frontend:v1.0 hemantdevgan/my-frontend:v1.0.1'
+                sh 'docker push hemantdevgan/my-frontend:v1.0.1'
             }
         }
         stage('Test') {
