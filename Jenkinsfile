@@ -1,7 +1,6 @@
 pipeline {
     agent any
 
-    DOCKER_USER
 
     stages {
         stage('Checkout') {
