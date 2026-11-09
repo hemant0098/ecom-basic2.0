@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_USERNAME = 'hemantdevgan'
+        FRONTEND_IMAGE_NAME = 'my-frontend'
+        FRONTEND_IMAGE_VERSION = 'v:1.0.0'
+    }
 
     stages {
         stage('Checkout') {
@@ -15,7 +20,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building images...'
-                sh 'docker build -f frontend/Dockerfile -t my-frontend:v1.0.1 .'
+                sh "docker build -f frontend/Dockerfile -t ${FRONTEND_IMAGE_NAME}:${FRONTEND_IMAGE_VERSION} ."
 
             }
         }
@@ -35,8 +40,8 @@ pipeline {
         stage('Push') {
             steps {
                 echo 'Pushing images...'
-                sh 'docker tag my-frontend:v1.0 hemantdevgan/my-frontend:v1.0.1'
-                sh 'docker push hemantdevgan/my-frontend:v1.0.1'
+                sh "docker tag ${FRONTEND_IMAGE_NAME}:${FRONTEND_IMAGE_VERSION} ${DOCKER_USERNAME}/${FRONTEND_IMAGE_NAME}:${FRONTEND_IMAGE_VERSION}"
+                sh "docker push ${DOCKER_USERNAME}/${FRONTEND_IMAGE_NAME}:${FRONTEND_IMAGE_VERSION}"
             }
         }
         stage('Test') {
