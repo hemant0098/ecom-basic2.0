@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_USERNAME = 'hemantdevgan'
         FRONTEND_IMAGE_NAME = 'my-frontend'
-        FRONTEND_IMAGE_VERSION = 'v:1.0.0'
+        FRONTEND_IMAGE_VERSION = 'v1.0.0'
     }
 
     stages {
